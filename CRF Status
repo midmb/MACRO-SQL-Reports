@@ -1,5 +1,6 @@
 /* PURPOSE :      	    Script to  retrieve CRF Status for all Expected, Actual and Overdue Forms for all  Randomised Participants from MACRO Study;
 */
+-- this repoert gives useful result but needs some modification with specicific data view name, Visits and forms. 
 
 SELECT
 
