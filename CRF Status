@@ -1,0 +1,187 @@
+/* PURPOSE :      	    Script to  retrieve CRF Status for all Expected, Actual and Overdue Forms for all  Randomised Participants from MACRO Study;
+*/
+
+SELECT
+
+ --select required fields from multiple tables
+ CRFPAGEINSTANCe.trialSite as Site
+--replace with your Randomisation Data View
+,[R_XXX_Rand].PatID_D as 'Participant ID'
+,studyvisit.VISITNAME AS Visit
+,[crfpage].CRFTITLE as 'Form'
+
+     
+--Randomisation Date in friendly formt, not required but added for filtering
+,case
+when RandDate < '12/31/1899' THEN cast(cast(cast(RandDate as float) as int)+2 as varchar(11))
+ELSE convert(varchar(11),RandDate,103)
+END  as 'Randomisation Date'
+
+--Discontinuation Status; not required but helps with filtering; 
+--get all discontinued participants with Yes or No,only ones who have randomisation dates
+,CASE WHEN not EXISTS (
+          SELECT  R_HART_Discontinuation.discontdate
+          FROM   [MACRO4HART].[dbo].R_HART_Discontinuation
+          WHERE  R_HART_Discontinuation.PatID_D = R_HART_Rand.PatID_D)
+          Then 'No' Else 'Yes' END As 'Discontinued' 
+      
+--As Required: CRF Status
+--Case statementt to replace MACRO database codes rendered with MACRO keywords; initially extracted with ',CRFPAGEINSTANCe.CRFPAGESTATUS' 
+ ,CASE
+WHEN CRFPAGEINSTANCe.CRFPAGESTATUS = -10
+THEN 'Requested'
+      
+WHEN CRFPAGEINSTANCe.CRFPAGESTATUS = -8
+THEN 'Not Applicable' 
+       
+WHEN CRFPAGEINSTANCe.CRFPAGESTATUS = -5
+THEN 'Not available' 
+
+WHEN CRFPAGEINSTANCe.CRFPAGESTATUS = 0
+THEN 'Success' 
+ 
+WHEN CRFPAGEINSTANCe.CRFPAGESTATUS = 10
+THEN 'Missing' 
+
+WHEN CRFPAGEINSTANCe.CRFPAGESTATUS = 20
+THEN 'Inform' 
+
+WHEN CRFPAGEINSTANCe.CRFPAGESTATUS = 25
+THEN 'OK/Warning' 
+
+WHEN CRFPAGEINSTANCe.CRFPAGESTATUS = 30
+THEN 'Warning' 
+
+end 'CRF Status'
+   
+-- This field relevant for the missing form: obtain Days since Randomisation per required visits
+--with bracket windows specific for trial; VisitIDs get specific numbers for your visits from Studyvisit table
+,CASE
+--baseline  and operative data     
+WHEN (CRFPAGEINSTANCE.VISITID = 10073 OR CRFPAGEINSTANCE.VISITID = 10072)
+THEN DATEDIFF(day, (RandDate),GETDATE())
+          
+--day30 
+WHEN CRFPAGEINSTANCE.VISITID = 10075
+THEN DATEDIFF(day, (RandDate),GETDATE()-35)
+  
+--discharge and 6M
+WHEN CRFPAGEINSTANCE.VISITID = 10074 Or CRFPAGEINSTANCE.VISITID = 10076
+THEN DATEDIFF(day, (RandDate),GETDATE()-210)
+               
+--1Y 
+WHEN CRFPAGEINSTANCE.VISITID = 10077
+THEN DATEDIFF(day, (RandDate),GETDATE()-425)
+ 
+END AS 'Days overdue'
+  
+
+FROM [CRFPAGEINSTANCE]
+,[STUDYVISIT]
+,[CRFPAGE]
+,[R_XXXXX_Rand]
+ 
+
+  where
+--As required: only obtain record for participant who have a randomisation date
+  RandDate>0
+    
+    
+-- As Required: Only obtain the CRFs up to today's date with bracket windows (this condition eliminates blank forms that are not overdue)
+and 
+--1Y
+(CRFPAGEINSTANCE.VISITID = 10077 and DATEDIFF(day, (RandDate),GETDATE()-425) >0 
+
+--baseline and operative
+or (CRFPAGEINSTANCE.VISITID = 10073 OR CRFPAGEINSTANCE.VISITID = 10072) and DATEDIFF(day, (RandDate),GETDATE())>0
+
+--30D
+or (CRFPAGEINSTANCE.VISITID = 10075 and DATEDIFF(day, (RandDate),GETDATE()-35)>0
+ 
+ 
+--discharge and 6 m
+or (CRFPAGEINSTANCE.VISITID = 10074 and DATEDIFF(day, (RandDate),GETDATE()-210)>0
+
+--6M and Discharge
+or (CRFPAGEINSTANCE.VISITID = 10076 and DATEDIFF(day, (RandDate),GETDATE()-210)>0))))
+ 
+ --linking fields
+and CRFPAGEINSTANCE.TRIALSITE= R_HART_Rand.SITE
+and CRFPAGEINSTANCE.PERSONID=R_HART_Rand.PERSONID
+and CRFPAGEINSTANCE.CRFPAGEID= CRFPAGE.CRFPAGEID
+and CRFPAGEINSTANCE.VISITID = STUDYVISIT.VISITID
+
+--excluded visits not required in report (Y2-Y5) 
+and STUDYVISIT.VISITid <>10619 
+and STUDYVISIT.VISITid <>10620
+and STUDYVISIT.VISITid <>10621
+and STUDYVISIT.VISITid <>10622
+--excl reoperation
+and STUDYVISIT.VISITid <>10498
+   
+-- forms excluded, deduced from requirements; ie as below but you may edit your excluded forms 
+and CRFPAGE.CRFTITLE <> 'Visit Date1'
+and CRFPAGE.CRFTITLE <> 'Visit Date2'
+and CRFPAGE.CRFTITLE <> 'Log' 
+and CRFPAGE.CRFTITLE <> 'Serious Adverse Event (SAE)'
+and CRFPAGE.CRFTITLE <> 'Client Service Receipt Inventory (Baseline)'
+and CRFPAGE.CRFTITLE <>'Patient Withdrawal Form'
+and CRFPAGE.CRFTITLE <>'Discontinuation'
+and CRFPAGE.CRFTITLE <>'Radiology'
+
+
+ and NOT EXISTS
+        (
+        SELECT  NULL
+        FROM    R_XXX_Discontinuation 
+        WHERE   R_XXX_Discontinuation.PatID_D =R_XXXXX_rand.PatID_D
+              and R_XXX_Discontinuationsite = R_XXXX_Rand.SITE
+        )
+  order by trialSite, [Participant ID]
+  
+  
+  ,CASE
+   WHEN studyvisit.VISITNAME = 'Baseline' THEN 1
+   WHEN  studyvisit.VISITNAME = 'Follow-Up Data' THEN 2
+   WHEN  studyvisit.VISITNAME = 'Day 30' THEN 3
+   WHEN  studyvisit.VISITNAME = 'Discharge' THEN 4
+   WHEN  studyvisit.VISITNAME = '6 Months' THEN 5
+   WHEN  studyvisit.VISITNAME = 'Annual Follow-Up' THEN 6
+       
+   
+
+END 
+
+
+  ,CASE
+   WHEN [crfpage].CRFTITLE = 'Inclusion, Exclusion and Consent' THEN 1
+   WHEN  [crfpage].CRFTITLE = 'Demography and Medical History' THEN 2
+   WHEN  [crfpage].CRFTITLE = 'Surgical History and Examination' THEN 3
+   WHEN  [crfpage].CRFTITLE = 'Questionnaire COmpliance' THEN 4
+   WHEN  [crfpage].CRFTITLE = 'FACT-C Questionnaire' THEN 5
+   WHEN  [crfpage].CRFTITLE = 'SF-12 Questionnaire' THEN 6
+   WHEN  [crfpage].CRFTITLE = 'Client Service Receipt Inventory' Then 7
+   WHEN  [crfpage].CRFTITLE = 'Randomisation' THEN 8
+   WHEN  [crfpage].CRFTITLE = 'Intra-operative  Date A' THEN 9
+   WHEN  [crfpage].CRFTITLE = 'Intra-operative  Date A' THEN 10
+   WHEN  [crfpage].CRFTITLE = 'POSSUM Score' THEN 11
+   WHEN  [crfpage].CRFTITLE = 'Discharge and Post-operative Data' THEN 12
+   WHEN  [crfpage].CRFTITLE = 'Patient Diary' THEN 13
+   WHEN  [crfpage].CRFTITLE = 'Patient Diary2' THEN 14
+   WHEN  studyvisit.VISITNAME = 'Day 30' and [crfpage].CRFTITLE = 'Questionnaire Compliance' THEN 15
+   WHEN  studyvisit.VISITNAME = 'Day 30' and [crfpage].CRFTITLE = 'FACT-C Questionnaire'  THEN 16
+   WHEN  studyvisit.VISITNAME = 'Day 30' and [crfpage].CRFTITLE = 'SF-12 Questionnaire'  THEN 17
+   WHEN  [crfpage].CRFTITLE = 'Colorectal Cancer Stage' THEN 18
+   WHEN  studyvisit.VISITNAME = '6 Months' and [crfpage].CRFTITLE = 'Questionnaire Compliance'   THEN 19
+   WHEN  studyvisit.VISITNAME = '6 Months' and [crfpage].CRFTITLE = 'FACT-C Questionnaire'   THEN 20
+   WHEN  studyvisit.VISITNAME = '6 Months' and [crfpage].CRFTITLE = 'SF-12 Questionnaire'   THEN 21
+   WHEN  studyvisit.VISITNAME = '6 Months' and [crfpage].CRFTITLE = 'Client Service Receipt Inventory' then 22
+   WHEN  [crfpage].CRFTITLE = 'OneYearPostOp1' THEN 23
+   WHEN  studyvisit.VISITNAME = 'Annual Follow-Up' and [crfpage].CRFTITLE = 'Questionnaire Compliance' then 24
+   WHEN  studyvisit.VISITNAME = 'Annual Follow-Up' and [crfpage].CRFTITLE = 'FACT-C Questionnaire' then 25     
+   WHEN  studyvisit.VISITNAME = 'Annual Follow-Up' and [crfpage].CRFTITLE = 'SF-12 Questionnaire'  then 26     
+   WHEN  studyvisit.VISITNAME = 'Annual Follow-Up' and [crfpage].CRFTITLE = 'Client Service Receipt Inventory' then 27     
+   WHEN  [crfpage].CRFTITLE = 'Annual Clinical Examination' THEN 28
+           
+END 
+
