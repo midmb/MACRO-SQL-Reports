@@ -1,0 +1,37 @@
+/* PURPOSE :      	    Script to  retrieve all Discontinued participants with Randomised dates and differrence days from MACRO TRIAL;
+*/
+--this report joins data from Randomisation and discontinuation data views 
+
+
+SELECT 
+
+      d.[Site]
+     ,d.[PatID_D] as 'Participant ID'
+          
+      ,case
+when r.RandDate < '12/31/1899' THEN cast(cast(cast(r.RandDate as float) as int)+2 as varchar(11))
+ELSE convert(varchar(11),r.RandDate,103)
+END  as 'Randomisation Date'
+      
+  ,case
+when DiscontDate < '12/31/1899' THEN cast(cast(cast(DiscontDate as float) as int)+2 as varchar(11))
+ELSE convert(varchar(11),DiscontDate,103)
+END  as 'Discontinuation Date'
+    
+   ,case
+when DATEDIFF(day,(r.RandDate),(d.DiscontDate)) > 0
+then DATEDIFF(day,(r.RandDate),(d.DiscontDate))
+
+--if NULL is returned Participant is Discontinued without being Randomised
+-- difference days between Discontinuation and Randomisation Dates
+when DATEDIFF(day,(r.RandDate),(d.DiscontDate)) <0
+then ''
+end as 'Difference Days'
+   
+FROM [R_XXX_Discontinuation] as d
+  
+
+ left join R_XXXXX_Rand as r
+ ON d.PatID_D = r.PatID_D
+
+  
