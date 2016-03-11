@@ -1,0 +1,23 @@
+--This  report gives an overview of the Progress in the Trial. 
+-- get counts for randomised participants, First and Last Randomisation Dates, Days since First Randomisation and proportion of recruiment per 20days
+
+SELECT Site, COUNT(*) as [Randomised]
+  ,case
+when Min(randdate) < '12/31/1899' THEN cast(cast(cast(min(randdate) as float) as int)+2 as varchar(11))
+ELSE convert(varchar(11),min(randdate),103)
+END  as 'First Randomisation Date in Site'
+    
+ ,case
+when Max(randdate) < '12/31/1899' THEN cast(cast(cast(Max(randdate) as float) as int)+2 as varchar(11))
+ELSE convert(varchar(11),Max(randdate),103)
+END  as 'Last Randomisation Date in Site'
+
+
+,cast(DATEDIFF(day,Min(randdate),(GetDate()))as int) as [Days since First Randomisation per Site]
+,Round(((COUNT(*)/(cast(DATEDIFF(day,Min(randdate),(GetDate()))as float)))*28),3) as 'Proportion(R/D*28)'
+
+-- replace with dataview name for the table storing Randomisation data
+FROM R_XXXX_Rand 
+where RandDate>0
+
+group by SITE WITH ROLLUP
