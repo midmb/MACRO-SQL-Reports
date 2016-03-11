@@ -12,7 +12,7 @@ SELECT
 ,crfpage.CRFTITLE as 'Form'
 
      
---Randomisation Date in friendly formt, not required but added for filtering
+--Randomisation Date in friendly format, not required but added for filtering
 ,case
 when RandDate < '12/31/1899' THEN cast(cast(cast(RandDate as float) as int)+2 as varchar(11))
 ELSE convert(varchar(11),RandDate,103)
