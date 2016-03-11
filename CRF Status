@@ -21,9 +21,9 @@ END  as 'Randomisation Date'
 --Discontinuation Status; not required but helps with filtering; 
 --get all discontinued participants with Yes or No,only ones who have randomisation dates
 ,CASE WHEN not EXISTS (
-          SELECT  R_HART_Discontinuation.discontdate
-          FROM   [MACRO4HART].[dbo].R_HART_Discontinuation
-          WHERE  R_HART_Discontinuation.PatID_D = R_HART_Rand.PatID_D)
+          SELECT  R_xxx_Discontinuation.discontdate
+          FROM   R_xxx_Discontinuation
+          WHERE  R_xxx_Discontinuation.PatID_D = R_xxx_Rand.PatID_D)
           Then 'No' Else 'Yes' END As 'Discontinued' 
       
 --As Required: CRF Status
