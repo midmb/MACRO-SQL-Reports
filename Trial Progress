@@ -1,4 +1,4 @@
---This  report gives an overview of the Progress in the Trial. 
+--This  report gives an overview of the Progress Recruitment after participants are randomised  in the Trial. 
 -- get counts for randomised participants, First and Last Randomisation Dates, Days since First Randomisation and proportion of recruiment per 20days
 
 SELECT Site, COUNT(*) as [Randomised]
