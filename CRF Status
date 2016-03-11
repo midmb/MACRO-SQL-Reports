@@ -1,6 +1,6 @@
 /* PURPOSE :      	    Script to  retrieve CRF Status for all Expected, Actual and Overdue Forms for all  Randomised Participants from MACRO Study;
 */
--- this repoert gives useful result but needs some modification with specicific data view name, Visits and forms. 
+-- this repoert gives useful resuls, but needs changes with specicific data view names, Visits and forms. 
 
 SELECT
 
@@ -9,7 +9,7 @@ SELECT
 --replace with your Randomisation Data View
 ,[R_XXX_Rand].PatID_D as 'Participant ID'
 ,studyvisit.VISITNAME AS Visit
-,[crfpage].CRFTITLE as 'Form'
+,crfpage.CRFTITLE as 'Form'
 
      
 --Randomisation Date in friendly formt, not required but added for filtering
