@@ -154,24 +154,24 @@ END
 
 
   ,CASE
-   WHEN [crfpage].CRFTITLE = 'Inclusion, Exclusion and Consent' THEN 1
-   WHEN  [crfpage].CRFTITLE = 'Demography and Medical History' THEN 2
-   WHEN  [crfpage].CRFTITLE = 'Surgical History and Examination' THEN 3
-   WHEN  [crfpage].CRFTITLE = 'Questionnaire COmpliance' THEN 4
+   WHEN [crfpage].CRFTITLE = 'Cover' THEN 1
+   WHEN  [crfpage].CRFTITLE = 'Demography' THEN 2
+   WHEN  [crfpage].CRFTITLE = 'History and Examination' THEN 3
+   WHEN  [crfpage].CRFTITLE = 'Questionnaire Compliance' THEN 4
    WHEN  [crfpage].CRFTITLE = 'FACT-C Questionnaire' THEN 5
    WHEN  [crfpage].CRFTITLE = 'SF-12 Questionnaire' THEN 6
    WHEN  [crfpage].CRFTITLE = 'Client Service Receipt Inventory' Then 7
    WHEN  [crfpage].CRFTITLE = 'Randomisation' THEN 8
-   WHEN  [crfpage].CRFTITLE = 'Intra-operative  Date A' THEN 9
-   WHEN  [crfpage].CRFTITLE = 'Intra-operative  Date A' THEN 10
-   WHEN  [crfpage].CRFTITLE = 'POSSUM Score' THEN 11
-   WHEN  [crfpage].CRFTITLE = 'Discharge and Post-operative Data' THEN 12
+   WHEN  [crfpage].CRFTITLE = 'Data A' THEN 9
+   WHEN  [crfpage].CRFTITLE = 'Data B' THEN 10
+   WHEN  [crfpage].CRFTITLE = 'Score' THEN 11
+   WHEN  [crfpage].CRFTITLE = 'Discharge' THEN 12
    WHEN  [crfpage].CRFTITLE = 'Patient Diary' THEN 13
    WHEN  [crfpage].CRFTITLE = 'Patient Diary2' THEN 14
    WHEN  studyvisit.VISITNAME = 'Day 30' and [crfpage].CRFTITLE = 'Questionnaire Compliance' THEN 15
    WHEN  studyvisit.VISITNAME = 'Day 30' and [crfpage].CRFTITLE = 'FACT-C Questionnaire'  THEN 16
    WHEN  studyvisit.VISITNAME = 'Day 30' and [crfpage].CRFTITLE = 'SF-12 Questionnaire'  THEN 17
-   WHEN  [crfpage].CRFTITLE = 'Colorectal Cancer Stage' THEN 18
+   WHEN  [crfpage].CRFTITLE = 'Stage' THEN 18
    WHEN  studyvisit.VISITNAME = '6 Months' and [crfpage].CRFTITLE = 'Questionnaire Compliance'   THEN 19
    WHEN  studyvisit.VISITNAME = '6 Months' and [crfpage].CRFTITLE = 'FACT-C Questionnaire'   THEN 20
    WHEN  studyvisit.VISITNAME = '6 Months' and [crfpage].CRFTITLE = 'SF-12 Questionnaire'   THEN 21
