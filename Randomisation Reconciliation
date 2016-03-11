@@ -1,9 +1,6 @@
 /* PURPOSE :      	  Randomisation Reconciliation, for all consented patients; Blinding Randomisation Arms, 
                       contains detailed all missing info as per codes set in Data Views
-DATE CREATED :        08/03/2016
-CREATOR :             M Barbu
-DATE Modified :       08/03/2016
-Modified by :    	    Mihaela Barbu
+
 */
 
 SELECT distinct
