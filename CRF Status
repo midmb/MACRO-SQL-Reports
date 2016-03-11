@@ -136,7 +136,7 @@ and CRFPAGE.CRFTITLE <>'Radiology'
         SELECT  NULL
         FROM    R_XXX_Discontinuation 
         WHERE   R_XXX_Discontinuation.PatID_D =R_XXXXX_rand.PatID_D
-              and R_XXX_Discontinuationsite = R_XXXX_Rand.SITE
+              and R_XXX_Discontinuation.site = R_XXXX_Rand.SITE
         )
   order by trialSite, [Participant ID]
   
