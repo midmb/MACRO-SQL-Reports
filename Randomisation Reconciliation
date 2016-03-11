@@ -1,0 +1,121 @@
+/* PURPOSE :      	  Randomisation Reconciliation, for all consented patients; Blinding Randomisation Arms, 
+                      contains detailed all missing info as per codes set in Data Views
+DATE CREATED :        08/03/2016
+CREATOR :             M Barbu
+DATE Modified :       08/03/2016
+Modified by :    	    Mihaela Barbu
+*/
+
+SELECT distinct
+   -- first 2 fields obtained from Randomisation form
+   r.Site
+  ,r.[PatID_D] as 'Patient ID'
+   
+   
+--the followiing 4 fields are from Cover form, 2 demographics and 2 inclusion  conditions
+,case
+when c.dob < '12/31/1899' 
+THEN
+					CASE 
+                        WHEN (cast(cast(cast(c.Dob as float) as int)+2 as varchar(11)) = -1)
+                        THEN 'Missing'
+						WHEN (cast(cast(cast(c.Dob as float) as int)+2 as varchar(11)) = -2)
+                        THEN 'Not Available'
+                        WHEN (cast(cast(cast(c.Dob as float) as int)+2 as varchar(11)) = -3)
+					    THEN 'Not Applicable'
+					else cast(cast(cast(c.Dob as float) as int)+2 as varchar(11))
+                    END 
+
+ELSE convert(varchar(11),c.Dob,103)
+END  as 'Date of birth'
+
+ ,c.Gender
+   
+,case
+when c.DateConsent < '12/31/1899' 
+THEN
+					CASE 
+                        WHEN (cast(cast(cast(c.DateConsent as float) as int)+2 as varchar(11)) = -1)
+                        THEN 'Missing'
+						WHEN (cast(cast(cast(c.DateConsent as float) as int)+2 as varchar(11)) = -2)
+                        THEN 'Not Available'
+                        WHEN (cast(cast(cast(c.DateConsent as float) as int)+2 as varchar(11)) = -3)
+					    THEN 'Not Applicable'
+					else cast(cast(cast(c.DateConsent as float) as int)+2 as varchar(11))
+                    END 
+
+ELSE convert(varchar(11),c.DateConsent,103)
+END  as 'Date of Consent'
+
+
+   ,case
+when c.[Inc8] = '-1'
+then 'Missing'
+when c.[Inc8] = '-2'
+then 'Not Available'
+when c.[Inc8] = '-3'
+then 'Not Applicable'
+else  c.[Inc8]
+end 'Elective' 
+
+,case
+when c.[Inc9] = '-1'
+then 'Missing'
+when c.[Inc9] = '-2'
+then 'Not Available'
+when c.[Inc9] = '-3'
+then 'Not Applicable'
+else  c.[Inc9]
+end 'Emergency'
+    
+  -- randomisation fields  
+,case 
+when r.RandResult  = 'Intervention' then 'B'
+when r.randResult  = 'Control' then 'A'
+end 'Randomisation Arm'
+    
+--,[RandID] as 'Randomisation ID'
+  ,case
+when r.[RandID] = '-1'
+then 'Missing'
+when r.[RandID] = '-2'
+then 'Not Available'
+when r.[RandID] = '-3'
+then 'Not Applicable'
+else  r.[RandID]
+end 'Randomisation ID'
+      
+      
+,case
+when r.RandDate < '12/31/1899' 
+THEN
+					CASE 
+                        WHEN (cast(cast(cast(r.RandDate as float) as int)+2 as varchar(11)) = -1)
+                        THEN 'Missing'
+						WHEN (cast(cast(cast(r.RandDate as float) as int)+2 as varchar(11)) = -2)
+                        THEN 'Not Available'
+                        WHEN (cast(cast(cast(r.RandDate as float) as int)+2 as varchar(11)) = -3)
+					    THEN 'Not Applicable'
+					else cast(cast(cast(r.RandDate as float) as int)+2 as varchar(11))
+                    END 
+
+ELSE convert(varchar(11),r.RandDate,103)
+END  as 'Date of Randomisation'
+  
+      
+
+FROM
+--replace with your Table names - Randomisation Data View
+[Macro4XXXX.[dbo].[R_XXXXX_Rand] as r,
+--replace with your Table names - Cover Data View
+[Macro4XXXX].dbo.R_XXXXX_Cover as c
+
+
+where
+
+--for randomised participants only 
+r.RandDate>0
+and c.PersonId =r.PersonId
+and c.Site =r.site
+
+ order by [Patient ID]
