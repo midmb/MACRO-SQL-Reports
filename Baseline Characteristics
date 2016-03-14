@@ -1,0 +1,109 @@
+
+/* PURPOSE :      	    Baseline Characteristics; This report renders unique results from 3 tables using left joins
+DATE CREATED :                14/3/2016
+*/
+
+
+SELECT
+    r.Site
+    ,r.Patid_d as 'Patient ID'
+    
+,case
+when c.DateConsent < '12/31/1899' 
+THEN
+					CASE 
+                        WHEN (cast(cast(cast(c.DateConsent as float) as int)+2 as varchar(11)) = -1)
+                        THEN 'Missing'
+						WHEN (cast(cast(cast(c.DateConsent as float) as int)+2 as varchar(11)) = -2)
+                        THEN 'Not Available'
+                        WHEN (cast(cast(cast(c.DateConsent as float) as int)+2 as varchar(11)) = -3)
+					    THEN 'Not Applicable'
+					else cast(cast(cast(c.DateConsent as float) as int)+2 as varchar(11))
+                    END 
+
+ELSE convert(varchar(11),c.DateConsent,103)
+END  as 'Date of Consent'
+
+
+           
+,case
+when r.RandDate < '12/31/1899' 
+THEN
+					CASE 
+                        WHEN (cast(cast(cast(r.RandDate as float) as int)+2 as varchar(11)) = -1)
+                        THEN 'Missing'
+						WHEN (cast(cast(cast(r.RandDate as float) as int)+2 as varchar(11)) = -2)
+                        THEN 'Not Available'
+                        WHEN (cast(cast(cast(r.RandDate as float) as int)+2 as varchar(11)) = -3)
+					    THEN 'Not Applicable'
+					else cast(cast(cast(r.RandDate as float) as int)+2 as varchar(11))
+                    END 
+
+ELSE convert(varchar(11),r.RandDate,103)
+END  as 'Date of Randomisation'
+
+
+,case 
+when r.RandResult = 'Intervention' then 'B'
+when r.RandResult = 'Control' then 'A'
+end 'Randomisation Arm'
+   
+
+
+ ,case
+when s.Cond1 = '-1'
+then 'Missing'
+when s.Cond1 = '-2'
+then 'Not Available'
+when s.Cond1 = '-3'
+then 'Not Applicable'
+else  s.Cond1
+end 'Condition1' 
+
+
+ ,case
+when s.Cond2 = '-1'
+then 'Missing'
+when s.Cond2 = '-2'
+then 'Not Available'
+when s.Cond2 = '-3'
+then 'Not Applicable'
+else  s.Cond2
+end 'Conditon2' 
+
+--Age	
+,case
+when cast(cast(c.Age  as bigint) as varchar(11)) = '-1'
+then 'Missing'
+when cast(cast(c.Age  as bigint) as varchar(11)) = '-2'
+then 'Not Available'
+when cast(cast(c.Age as bigint) as varchar(11)) = '-3'
+then 'Not Available'
+else cast(cast(c.Age as bigint) as varchar(11))
+end 'Age' 
+
+--BMI
+,case
+when cast(cast(m.BMI  as bigint) as varchar(11)) = '-1'
+then 'Missing'
+when cast(cast(m.BMI  as bigint) as varchar(11)) = '-2'
+then 'Not Available'
+when cast(cast(m.BMI as bigint) as varchar(11)) = '-3'
+then 'Not Available'
+else cast(cast(m.BMI as bigint) as varchar(11))
+end 'BMI' 
+	
+,c.Gender
+
+FROM r_XXX_rand AS r
+LEFT JOIN R_XXXX_MedHist AS m
+ON r.PatID_D = m.PatID_D
+
+left join R_XXXXX_surgical as s
+ON r.PatID_D = s.PatID_D
+
+left join  R_HART_Cover as c
+on c.PatID=r.PatID_D
+
+where RandDate>0
+order by r.PatID_D
