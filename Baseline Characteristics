@@ -102,7 +102,7 @@ ON r.PatID_D = m.PatID_D
 left join R_XXXXX_surgical as s
 ON r.PatID_D = s.PatID_D
 
-left join  R_HART_Cover as c
+left join  R_XXXX_Cover as c
 on c.PatID=r.PatID_D
 
 where RandDate>0
